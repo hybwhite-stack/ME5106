@@ -214,7 +214,9 @@ def main() -> None:
         MODEL.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         predictions = predict_ids(record, grouped, [49])
         for row in predictions:
-            row.update({"假定参考功率_W": 425, "假定参考速度_mm_s": 850,
+            # 说明 PDF 第 4 页明确标注 Sample 49 为 425 W、850 mm/s；
+            # 该值只用于拟合后的对照，不进入训练、排名或标准化。
+            row.update({"题目第4页参考功率_W": 425, "题目第4页参考速度_mm_s": 850,
                         "功率绝对误差_W": abs(row["预测功率_W"] - 425),
                         "功率相对误差_pct": 100 * abs(row["预测功率_W"] - 425) / 425,
                         "功率20pct内": int(abs(row["预测功率_W"] - 425) / 425 <= .2),
