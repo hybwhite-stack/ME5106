@@ -1,0 +1,11 @@
+模型,候选,特征数,特征,46组内部留出_相对平方误差,46组内部留出_平均相对误差_pct,46组内部留出_20pct内,49预测功率_W
+浅层GBDT,搜索_7项,7,Band40to80k_Fraction_Mean; CrestFactor_Mean; PeakAbs_Mean; PooledRMS; SpectralCentroid_Hz_Mean; 前0至10ms对中10至25ms_RMS比_五轨中位数; 尾25ms至终点对中10至25ms_RMS比_五轨中位数,0.013764609771427634,8.975373832870984,40,345.03584636032764
+浅层GBDT,搜索_6项,6,Band40to80k_Fraction_Mean; CrestFactor_Mean; PeakAbs_Mean; PooledRMS; 前0至10ms对中10至25ms_RMS比_五轨中位数; 尾25ms至终点对中10至25ms_RMS比_五轨中位数,0.013890715317227692,8.9986535860863,42,346.4876187158482
+浅层GBDT,搜索_5项,5,Band40to80k_Fraction_Mean; CrestFactor_Mean; PooledRMS; 前0至10ms对中10至25ms_RMS比_五轨中位数; 尾25ms至终点对中10至25ms_RMS比_五轨中位数,0.014066112709474325,9.206609257242885,42,346.23458718257876
+浅层GBDT,上一轮局部搜索,5,PooledRMS; Band40to80k_Fraction_Mean; CrestFactor_Mean; PeakAbs_Mean; 尾25ms至终点对中10至25ms_RMS比_五轨中位数,0.01418862115242896,9.083046699219583,40,328.2243221164491
+浅层GBDT,搜索_4项,4,Band40to80k_Fraction_Mean; CrestFactor_Mean; PooledRMS; 前0至10ms对中10至25ms_RMS比_五轨中位数,0.014684769589128194,9.307818888310447,41,350.75952767773043
+浅层GBDT,搜索_8项,8,Band40to80k_Fraction_Mean; Band8to20k_Fraction_Mean; CrestFactor_Mean; PeakAbs_Mean; PooledRMS; SpectralCentroid_Hz_Mean; 前0至10ms对中10至25ms_RMS比_五轨中位数; 尾25ms至终点对中10至25ms_RMS比_五轨中位数,0.014991175436081151,9.440401906537316,40,352.31922622131896
+浅层GBDT,搜索_9项,9,Band40to80k_Fraction_Mean; Band8to20k_Fraction_Mean; CrestFactor_Mean; PeakAbs_Mean; PooledRMS; SpectralCentroid_Hz_Mean; 前0至10ms对中10至25ms_RMS比_五轨中位数; 尾25ms至终点对中10至25ms_RMS比_五轨中位数; 起始尖峰比_最突出两条均值,0.015113287046098808,9.49416395987507,43,380.4152622353909
+浅层GBDT,搜索_3项,3,Band40to80k_Fraction_Mean; PooledRMS; 前0至10ms对中10至25ms_RMS比_五轨中位数,0.016121231689355895,9.77701622659147,42,369.45284514171396
+浅层GBDT,搜索_10项,10,Band40to80k_Fraction_Mean; Band8to20k_Fraction_Mean; CrestFactor_Mean; PeakAbs_Mean; PooledRMS; SpectralCentroid_Hz_Mean; 前0至10ms减中10至25ms_高频比例_五轨中位数; 前0至10ms对中10至25ms_RMS比_五轨中位数; 尾25ms至终点对中10至25ms_RMS比_五轨中位数; 起始尖峰比_最突出两条均值,0.017277549129301812,10.119966750464446,42,380.1032071905531
+浅层GBDT,原主模型特征,8,PooledRMS; PeakAbs_Mean; SpectralCentroid_Hz_Mean; Band8to20k_Fraction_Mean; Band40to80k_Fraction_Mean; 起始尖峰比_最突出两条均值; 前0至10ms对中10至25ms_RMS比_五轨中位数; 前0至10ms减中10至25ms_高频比例_五轨中位数,0.021194790533149706,10.661009361395116,39,396.48718810253615
