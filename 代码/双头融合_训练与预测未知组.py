@@ -16,11 +16,13 @@ from sklearn.linear_model import Ridge, RidgeClassifier
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 
-from 训练策略_统一五折筛选前五并预测 import SPEED, STRATEGIES, assemble
+from 训练策略_统一五折筛选前五并预测 import SPEED, STRATEGIES, assemble, fixed_folds
 
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "结果表" / "未知三组_双头融合候选预测.csv"
+HEAD_COMPARISON = ROOT / "结果表" / "未知三组_功率单双头对照.csv"
+HELDOUT_COMPARISON = ROOT / "结果表" / "功率单双头_46组留出对照.csv"
 UNKNOWN_IDS = (41, 43, 49)
 POWER_WEIGHTS = np.array([0.25, 0.25, 0.50])
 SPEED_LEVELS = np.array([550.0, 700.0, 850.0])
@@ -108,6 +110,22 @@ def vote(row: np.ndarray) -> float:
     return float(winners[0] if len(winners) == 1 else row[0])
 
 
+def power_heads(parts: np.ndarray) -> dict[str, np.ndarray]:
+    return {
+        "单GBDT": parts[:, 0],
+        "单加权岭": parts[:, 2],
+        "GBDT25pct_加权岭75pct": 0.25 * parts[:, 0] + 0.75 * parts[:, 2],
+        "原三模型融合": parts @ POWER_WEIGHTS,
+    }
+
+
+def write_rows(path: Path, rows: list[dict]) -> None:
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def main() -> None:
     rows = {int(row["SampleID"]): row for row in assemble()["整段"]}
     if set(rows) != set(range(1, 50)):
@@ -126,6 +144,8 @@ def main() -> None:
     ])
     votes = speed_votes(training, unknown)
     predictions = []
+    head_rows = []
+    unknown_heads = power_heads(power_parts)
     for index, sid in enumerate(UNKNOWN_IDS):
         predictions.append({
             "SampleID": sid,
@@ -138,11 +158,46 @@ def main() -> None:
             "MLP速度票_mm_s": float(votes[index, 1]),
             "随机森林速度票_mm_s": float(votes[index, 2]),
         })
+        for name, values in unknown_heads.items():
+            head_rows.append({"SampleID": sid, "功率头": name,
+                              "预测功率_W": float(values[index]),
+                              "速度头": "三模型投票",
+                              "预测速度_mm_s": vote(votes[index])})
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT.open("w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(predictions[0]))
-        writer.writeheader()
-        writer.writerows(predictions)
+    write_rows(OUTPUT, predictions)
+    write_rows(HEAD_COMPARISON, head_rows)
+
+    # Same SampleID-level split and same frozen speed voter for all power heads.
+    folds = fixed_folds()
+    heldout = {name: [] for name in unknown_heads}
+    for fold in range(1, 6):
+        train_fold = [rows[sid] for sid in sorted(folds) if folds[sid] != fold]
+        test_fold = [rows[sid] for sid in sorted(folds) if folds[sid] == fold]
+        fold_parts = np.column_stack([
+            fit_predict_regression(name, features, train_fold, test_fold,
+                                   "LaserPower_W", weighted)
+            for name, features, weighted in POWER_COMPONENTS
+        ])
+        fold_power = power_heads(fold_parts)
+        fold_speed = np.array([vote(row) for row in speed_votes(train_fold, test_fold)])
+        for index, row in enumerate(test_fold):
+            actual_p = float(row["LaserPower_W"])
+            actual_v = float(row["ScanSpeed_mm_s"])
+            for name, values in fold_power.items():
+                relative = abs(float(values[index]) - actual_p) / actual_p
+                heldout[name].append((relative, float(fold_speed[index]) == actual_v))
+    comparison = []
+    for name, records in heldout.items():
+        if len(records) != 46:
+            raise ValueError("Each power head needs 46 held-out predictions")
+        comparison.append({
+            "功率头": name, "留出组数": len(records),
+            "功率相对误差20pct内": sum(rel <= 0.20 for rel, _ in records),
+            "速度正确_同一投票头": sum(ok for _, ok in records),
+            "PV同时达标": sum(rel <= 0.20 and ok for rel, ok in records),
+            "功率平均相对误差_pct": 100 * float(np.mean([rel for rel, _ in records])),
+        })
+    write_rows(HELDOUT_COMPARISON, comparison)
     for row in predictions:
         print(f"{row['SampleID']}: P={row['预测功率_W']:.2f} W, "
               f"V={row['预测速度_mm_s']:.0f} mm/s")
